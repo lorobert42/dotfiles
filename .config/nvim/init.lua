@@ -104,24 +104,33 @@ lazy.path = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
 lazy.opts = {}
 
 lazy.setup({
+	-- Theme
 	{'catppuccin/nvim', name = 'catppuccin', priority = 1000},
 	{'nvim-lualine/lualine.nvim'},
 	{'akinsho/bufferline.nvim'},
 	{'echasnovski/mini.indentscope'},
+	{'kyazdani42/nvim-web-devicons'},
+
+	-- Code
 	{'nvim-treesitter/nvim-treesitter'},
 	{'nvim-treesitter/nvim-treesitter-textobjects'},
 	{'echasnovski/mini.ai'},
 	{'echasnovski/mini.comment'},
 	{'echasnovski/mini.surround'},
 	{'echasnovski/mini.pairs'},
-	{'echasnovski/mini.bufremove'},
+	{'tpope/vim-repeat'},
+
+	-- File explorer
 	{'kyazdani42/nvim-tree.lua'},
+
+	-- Fuzzy find
 	{
 		'nvim-telescope/telescope.nvim',
 		dependencies = { 'nvim-lua/plenary.nvim' }
   },
 	{'nvim-telescope/telescope-fzf-native.nvim', build = 'make'},
-	{'akinsho/toggleterm.nvim'},
+
+	-- Git
 	{
 		'kdheepak/lazygit.nvim',
 		dependencies = {
@@ -140,7 +149,28 @@ lazy.setup({
 		},
 	},
 	{'lewis6991/gitsigns.nvim'},
-	{'tpope/vim-repeat'},
+
+	-- Utils
+	{'echasnovski/mini.bufremove'},
+	{'akinsho/toggleterm.nvim'},
+
+	-- LSP
+	{'neovim/nvim-lspconfig'},
+	{'williamboman/mason.nvim'},
+  {'williamboman/mason-lspconfig.nvim'},
+
+	-- Autocompletion
+	{'hrsh7th/nvim-cmp'},
+  {'hrsh7th/cmp-buffer'},
+  {'hrsh7th/cmp-path'},
+  {'saadparwaiz1/cmp_luasnip'},
+  {'hrsh7th/cmp-nvim-lsp'},
+
+	-- Snippets
+	{
+		'L3MON4D3/LuaSnip',
+		dependencies = { 'rafamadriz/friendly-snippets' },
+	},
 })
 
 -- ========================================================================== --
@@ -318,5 +348,224 @@ require('nvim-treesitter.configs').setup({
 		'python',
 		'rust',
 	},
+})
+
+---
+-- Luasnip (snippet engine)
+---
+-- See :help luasnip-loaders
+require('luasnip.loaders.from_vscode').lazy_load()
+
+---
+-- nvim-cmp (autocomplete)
+---
+vim.opt.completeopt = {'menu', 'menuone', 'noselect'}
+
+local cmp = require('cmp')
+local luasnip = require('luasnip')
+
+local select_opts = {behavior = cmp.SelectBehavior.Select}
+
+-- See :help cmp-config
+cmp.setup({
+  snippet = {
+    expand = function(args)
+      luasnip.lsp_expand(args.body)
+    end
+  },
+  sources = {
+    {name = 'path'},
+    {name = 'nvim_lsp'},
+    {name = 'buffer', keyword_length = 3},
+    {name = 'luasnip', keyword_length = 2},
+  },
+  window = {
+    completion = cmp.config.window.bordered(),
+    documentation = cmp.config.window.bordered(),
+  },
+  formatting = {
+    fields = {'menu', 'abbr', 'kind'},
+    format = function(entry, item)
+      local menu_icon = {
+        nvim_lsp = 'λ',
+        luasnip = '⋗',
+        buffer = 'Ω',
+        path = '🖫',
+      }
+
+      item.menu = menu_icon[entry.source.name]
+      return item
+    end,
+  },
+  -- See :help cmp-mapping
+  mapping = {
+    ['<Up>'] = cmp.mapping.select_prev_item(select_opts),
+    ['<Down>'] = cmp.mapping.select_next_item(select_opts),
+
+    ['<C-p>'] = cmp.mapping.select_prev_item(select_opts),
+    ['<C-n>'] = cmp.mapping.select_next_item(select_opts),
+
+    ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-d>'] = cmp.mapping.scroll_docs(4),
+
+    ['<C-e>'] = cmp.mapping.abort(),
+    ['<C-y>'] = cmp.mapping.confirm({select = true}),
+    ['<CR>'] = cmp.mapping.confirm({select = false}),
+
+    ['<C-f>'] = cmp.mapping(function(fallback)
+      if luasnip.jumpable(1) then
+        luasnip.jump(1)
+      else
+        fallback()
+      end
+    end, {'i', 's'}),
+
+    ['<C-b>'] = cmp.mapping(function(fallback)
+      if luasnip.jumpable(-1) then
+        luasnip.jump(-1)
+      else
+        fallback()
+      end
+    end, {'i', 's'}),
+
+    ['<Tab>'] = cmp.mapping(function(fallback)
+      local col = vim.fn.col('.') - 1
+
+      if cmp.visible() then
+        cmp.select_next_item(select_opts)
+      elseif col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') then
+        fallback()
+      else
+        cmp.complete()
+      end
+    end, {'i', 's'}),
+
+    ['<S-Tab>'] = cmp.mapping(function(fallback)
+      if cmp.visible() then
+        cmp.select_prev_item(select_opts)
+      else
+        fallback()
+      end
+    end, {'i', 's'}),
+  },
+})
+
+---
+-- Diagnostic customization
+---
+local sign = function(opts)
+  -- See :help sign_define()
+  vim.fn.sign_define(opts.name, {
+    texthl = opts.name,
+    text = opts.text,
+    numhl = ''
+  })
+end
+
+sign({name = 'DiagnosticSignError', text = '✘'})
+sign({name = 'DiagnosticSignWarn', text = '▲'})
+sign({name = 'DiagnosticSignHint', text = '⚑'})
+sign({name = 'DiagnosticSignInfo', text = '»'})
+
+-- See :help vim.diagnostic.config()
+vim.diagnostic.config({
+  virtual_text = false,
+  severity_sort = true,
+  float = {
+    border = 'rounded',
+    source = 'always',
+  },
+})
+
+vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(
+  vim.lsp.handlers.hover,
+  {border = 'rounded'}
+)
+
+vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(
+  vim.lsp.handlers.signature_help,
+  {border = 'rounded'}
+)
+
+---
+-- LSP Keybindings
+---
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = group,
+  desc = 'LSP actions',
+  callback = function()
+    local bufmap = function(mode, lhs, rhs)
+      local opts = {buffer = true}
+      vim.keymap.set(mode, lhs, rhs, opts)
+    end
+
+    -- You can search each function in the help page.
+    -- For example :help vim.lsp.buf.hover()
+
+    bufmap('n', 'K', '<cmd>lua vim.lsp.buf.hover()<cr>')
+    bufmap('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<cr>')
+    bufmap('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<cr>')
+    bufmap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<cr>')
+    bufmap('n', 'go', '<cmd>lua vim.lsp.buf.type_definition()<cr>')
+    bufmap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<cr>')
+    bufmap('n', 'gs', '<cmd>lua vim.lsp.buf.signature_help()<cr>')
+    bufmap('n', '<F2>', '<cmd>lua vim.lsp.buf.rename()<cr>')
+    bufmap({'n', 'x'}, '<F3>', '<cmd>lua vim.lsp.buf.format({async = true})<cr>')
+    bufmap('n', 'gl', '<cmd>lua vim.diagnostic.open_float()<cr>')
+    bufmap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<cr>')
+    bufmap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<cr>')
+
+    bufmap('n', '<F4>', '<cmd>lua vim.lsp.buf.code_action()<cr>')
+    bufmap('x', '<F4>', '<cmd>lua vim.lsp.buf.code_action()<cr>')
+
+    -- if using Neovim v0.8 uncomment this
+    -- bufmap('x', '<F4>', '<cmd>lua vim.lsp.buf.range_code_action()<cr>')
+  end
+})
+
+---
+-- LSP servers
+---
+-- See :help mason-settings
+require('mason').setup({
+  ui = {border = 'rounded'}
+})
+
+local lspconfig = require('lspconfig')
+local lsp_capabilities = require('cmp_nvim_lsp').default_capabilities()
+
+-- See :help mason-lspconfig-settings
+require('mason-lspconfig').setup({
+  ensure_installed = {
+		'bashls',
+		'clangd',
+		'autotools_ls',
+    'tsserver',
+    'eslint',
+    'html',
+    'cssls',
+		'somesass_ls',
+		'basedpyright',
+		'rust_analyzer',
+  },
+  -- See :help mason-lspconfig.setup_handlers()
+  handlers = {
+    function(server)
+      -- See :help lspconfig-setup
+      lspconfig[server].setup({
+        capabilities = lsp_capabilities,
+      })
+    end,
+    ['tsserver'] = function()
+      lspconfig.tsserver.setup({
+        capabilities = lsp_capabilities,
+        settings = {
+          completions = {
+            completeFunctionCalls = true
+          }
+        }
+      })
+    end,
+  }
 })
 
