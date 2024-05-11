@@ -16,5 +16,5 @@ vim.keymap.set({'n', 'x'}, 'X', '"_d', {desc = 'Delete without altering register
 
 -- Commands
 vim.keymap.set({'n', 'v', 'i'}, '<C-s>', '<esc><cmd>update<cr>', {desc = 'Save'})
-vim.keymap.set('n', '<leader>bq', '<cmd>bdelete<cr>', {desc = 'Close current buffer'})
-vim.keymap.set('n', '<leader>bl', '<cmd>buffer #<cr>', {desc = 'Go to buffer #'})
+vim.keymap.set('n', '<leader>bl', '<cmd>bNext<cr>', {desc = 'Go to next buffer'})
+vim.keymap.set('n', '<leader>bh', '<cmd>bprevious<cr>', {desc = 'Go to previous buffer'})
