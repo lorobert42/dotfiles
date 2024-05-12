@@ -1,6 +1,6 @@
 return {
   'stevearc/conform.nvim',
-  event = { 'BufWritePre' },
+  event = { 'BufWritePre', 'BufNewFile' },
   cmd = { 'ConformInfo' },
   keys = {
     {
@@ -15,6 +15,7 @@ return {
   opts = {
     formatters_by_ft = {
       rust = { 'rustfmt' },
+      python = { 'isort', 'black' },
     },
   },
 }
