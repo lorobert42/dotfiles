@@ -92,7 +92,10 @@ function Plugin.config()
 			end,
 			['lua_ls'] = function()
 				require('plugins.lsp.lua_ls')
-			end
+			end,
+      ['rust_analyzer'] = function()
+        return
+      end,
 		}
 	})
 end
