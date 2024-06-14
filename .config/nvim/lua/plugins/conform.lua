@@ -16,6 +16,8 @@ return {
     formatters_by_ft = {
       rust = { 'rustfmt' },
       python = { 'isort', 'black' },
+      javascript = { 'eslint_d' },
+      typescript = { 'eslint_d' },
     },
   },
   format_on_save = {
