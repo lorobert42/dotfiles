@@ -60,18 +60,20 @@ function Plugin.config()
 
 	-- See :help mason-lspconfig-settings
 	require('mason-lspconfig').setup({
-		ensure_installed = {
-			'bashls',
-			'clangd',
-			'autotools_ls',
-			'tsserver',
-			'eslint',
-			'html',
-			'cssls',
-			'somesass_ls',
-			'basedpyright',
-			'rust_analyzer',
-		},
+		-- ensure_installed = {
+		-- 	'autotools_ls',
+		--     'bashls',
+		-- 	'clangd',
+		-- 	'cssls',
+		-- 	'eslint',
+		--     'groovyls',
+		-- 	'html',
+		--     'java_language_server',
+		--     'jedi_language_server',
+		-- 	'rust_analyzer',
+		--     'somesass_ls',
+		--     'tsserver',
+		-- },
 		handlers = {
 			-- See :help mason-lspconfig-dynamic-server-setup
 			function(server)
@@ -96,6 +98,13 @@ function Plugin.config()
       ['rust_analyzer'] = function()
         return
       end,
+      ['groovyls'] = function()
+        lspconfig.groovyls.setup({
+          root_dir = lspconfig.util.root_pattern('.git'),
+          capabilities = lsp_capabilities,
+          settings = {}
+        })
+      end,
 		}
 	})
 end
@@ -118,7 +127,7 @@ function user.on_attach()
 	bufmap('n', 'gs', '<cmd>lua vim.lsp.buf.signature_help()<cr>', 'Signature help')
 	bufmap('n', '<F2>', '<cmd>lua vim.lsp.buf.rename()<cr>', 'Rename symbol')
 	bufmap('n', '<F4>', '<cmd>lua vim.lsp.buf.code_action()<cr>', 'Code action')
-	bufmap('n', 'gl', '<cmd>lua vim.diagnostic.open_float()<cr>', 'See diagnostics')
+	bufmap('n', 'gk', '<cmd>lua vim.diagnostic.open_float()<cr>', 'See diagnostics')
 	bufmap('n', '[d', '<cmd>lua vim.diagnostic.goto_prev()<cr>', 'Previous diagnostic')
 	bufmap('n', ']d', '<cmd>lua vim.diagnostic.goto_next()<cr>', 'Next diagnostic')
 end

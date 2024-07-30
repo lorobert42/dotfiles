@@ -16,3 +16,19 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 		vim.highlight.on_yank({higroup = 'Visual', timeout = 200})
 	end
 })
+
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  group = vim.api.nvim_create_augroup('jenkinsfile_detect', {clear = true}),
+  pattern = { 'Jenkinsfile' },
+  callback = function()
+    vim.cmd('set filetype=groovy')
+  end
+})
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'java', 'groovy' },
+  callback = function()
+    vim.cmd('setlocal tabstop=4')
+    vim.cmd('setlocal shiftwidth=4')
+  end
+})
