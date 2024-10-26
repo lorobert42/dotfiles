@@ -1,0 +1,23 @@
+theme = "catppuccin_mocha"
+
+[editor]
+line-number = "relative"
+true-color = true
+bufferline = "multiple"
+default-line-ending = "lf"
+popup-border = "all"
+
+[editor.cursor-shape]
+normal = "bar"
+insert = "bar"
+
+[editor.indent-guides]
+render = true
+character = "┆"
+skip-levels = 1
+
+[keys.normal]
+C-s = ":w"
+
+[keys.insert]
+C-s = ["normal_mode", ":w"]
