@@ -11,6 +11,7 @@ return {
 			'html-lsp',
       'java-language-server',
       'jedi-language-server',
+      'jinja_lsp',
 			'rust-analyzer',
       'some-sass-language-server',
       'typescript-language-server',

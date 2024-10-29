@@ -25,15 +25,26 @@ zinit snippet OMZP::sudo
 zinit cdreplay -q
 
 if [ -d "/home/linuxbrew/.linuxbrew/bin" ] ; then
-  PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+  eval "$(brew shellenv)"
 fi
 if [ -d "/home/$USER/.local/bin" ] ; then
   PATH="/home/$USER/.local/bin:$PATH"
+fi
+if [ -d "/snap/bin" ] ; then
+  PATH="/snap/bin:$PATH"
 fi
 if [ -d "/home/$USER/.nvm" ] ; then
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
   [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+fi
+if [ -d "/home/$USER/.pulumi/bin" ] ; then
+  PATH="/home/$USER/.pulumi/bin:$PATH"
+fi
+
+# Add custom completions directory
+if [ -d "/home/$USER/.zfunc" ] ; then
+  fpath+=~/.zfunc
 fi
 
 # Load completions
@@ -72,6 +83,16 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'eza -1 --color=always $real
 alias vim='nvim'
 alias c='clear'
 alias git_current_branch='git rev-parse --abbrev-ref HEAD'
+alias k='kubectl'
+function mkcd() {
+  mkdir -p $@ && cd ${@:$#}
+}
+function update_all() {
+  sudo apt update && sudo apt upgrade
+  brew update && brew upgrade
+  cargo install-update --all
+  sudo snap refresh --list
+}
 
 # Shell integrations
 eval "$(fzf --zsh)"
