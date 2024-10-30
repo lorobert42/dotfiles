@@ -25,7 +25,7 @@ zinit snippet OMZP::sudo
 zinit cdreplay -q
 
 if [ -d "/home/linuxbrew/.linuxbrew/bin" ] ; then
-  eval "$(brew shellenv)"
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 if [ -d "/home/$USER/.local/bin" ] ; then
   PATH="/home/$USER/.local/bin:$PATH"

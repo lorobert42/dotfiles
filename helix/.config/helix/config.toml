@@ -18,6 +18,7 @@ skip-levels = 1
 
 [keys.normal]
 C-s = ":w"
+C-r = ":reload"
 
 [keys.insert]
 C-s = ["normal_mode", ":w"]
